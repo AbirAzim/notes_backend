@@ -13,7 +13,9 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
   },
   "repository": {
     "type": "git",
