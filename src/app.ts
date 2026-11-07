@@ -1,11 +1,16 @@
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+
 import { env } from './config/env';
+import { docsRouter } from './docs';
 import { healthRouter } from './modules/health/health.routes';
 import { errorHandler, notFound } from './middleware/error-handler';
 
 export const app = express();
+
+// 0. Swagger UI — helmet with CSP disabled, because CSP blocks Swagger's inline scripts
+app.use('/docs', helmet({ contentSecurityPolicy: false }), docsRouter);
 
 // 1. security headers on every response
 app.use(helmet());

@@ -13,7 +13,9 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
   },
   "repository": {
     "type": "git",
@@ -31,11 +33,12 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.6",
+    "@types/swagger-ui-express": "^4.1.8",
     "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1"
   },
   "dependencies": {
@@ -43,6 +46,8 @@
     "express": "^5.3.0",
     "helmet": "^8.3.0",
     "mongoose": "^9.12.0",
+    "swagger-ui-express": "^5.0.1",
+    "yaml": "^2.9.1",
     "zod": "^4.6.7"
   }
 }
