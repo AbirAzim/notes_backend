@@ -1,25 +1,29 @@
 ## Functional Requirements
 
 ### Authentication
+
 - FR-1: A guest can register with name, email and password (role will be set to `USER`).
 - FR-2: A new user must verify their email via a signed link before they can log in.
 - FR-3: A verified user logs in with email + password and receives a JWT containing sub (userId) and role ('USER' | 'ADMIN').
-- FR-4: Protected endpoints require a valid  Bearer Token header.
+- FR-4: Protected endpoints require a valid Bearer Token header.
 - FR-5: A logged-in user can fetch their own profile.
 - FR-6: The first admin is created by a seed script from env.
 
 ### Notes (User)
+
 - FR-7: A user can create a note (title, content).
 - FR-8: A user can list only their own notes, paginated, newest first.
 - FR-9: A user can view, update and delete a single note they own (someone else's note returns 404).
 
 ### User Management (Admin)
+
 - FR-10: An admin can list all users and their contents.
 - FR-11: An admin can invite a user by email and assign their role (USER | ADMIN) in the invite.
 - FR-12: An admin can update a user's name, email, role and interests.
 - FR-13: An admin can delete a user; that user's notes and posts are deleted with them.
 
 ### Interests & Posts (User + Admin)
+
 - FR-14: A user can set their own list of interests (trimmed, lowercased, de-duplicated).
 - FR-15: Any logged-in user can view users grouped by interest. (one User.aggregate() call)
 - FR-16: A user can create a post (title, body); posts are visible to every logged-in user.
