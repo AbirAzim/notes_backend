@@ -1,0 +1,32 @@
+{
+	"name": "notes_backend",
+	"version": "1.0.0",
+	"description": "notes API with RBAC, MongoDB indexing and aggregation",
+	"main": "index.js",
+	"private": true,
+	"directories": {
+		"doc": "docs"
+	},
+	"scripts": {
+		"dev": "tsx watch src/server.ts",
+		"build": "tsc",
+		"start": "node dist/server.js",
+		"typecheck": "tsc --noEmit"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AbirAzim/notes_backend.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/AbirAzim/notes_backend/issues"
+	},
+	"homepage": "https://github.com/AbirAzim/notes_backend#readme",
+	"devDependencies": {
+		"@types/node": "^26.6.6",
+		"tsx": "^4.23.15",
+		"typescript": "^7.0.2"
+	}
+}
