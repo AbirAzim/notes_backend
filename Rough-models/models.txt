@@ -27,3 +27,42 @@ Post  (Public Only Need Authentication)
   - createdAt (auto generate)
   - updatedAt (auto generate)
   - Indexes: { author: 1, _id: -1 }
+
+
+##Routes
+  health
+    - GET /health
+  
+  Auth
+    - POST /auth/login
+
+    - POST /auth/register
+    - POST /auth/verify-email 
+    - POST /auth/resend-verification
+    - POST /auth/accept-invite  
+    
+  USers
+    - GET /users/me
+    - PATCH /users/me
+    - GET /users/grouped-by-interests (Scenario 1: users grouped by interest (?interests=chess,reading))
+    - GET /users/:id/posts (Scenario 2: all posts of a user ($lookup))
+
+  Notes (own only)
+    - POST /notes 
+    - GET /notes
+    - GET /notes/:id
+    - PATCH /notes/:id 
+    - DELETE /notes/:id
+  
+  Posts
+    - POST /posts
+    - GET
+    - PATCH
+    - DELETE 
+
+  Admins
+    - GET /admin/user
+    - POST /admin/invitations
+    - PATCH  /admin/users/:id
+    - DELETE /admin/users/:id 
+    - GET  /admin/notes 
