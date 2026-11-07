@@ -37,3 +37,415 @@ paths:
                   status:
                     type: string
                     example: ok
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+ 
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/ObjectId'
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+ 
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Email already in use
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+ 
+  schemas:
+    ObjectId:
+      type: string
+      pattern: '^[a-fA-F0-9]{24}$'
+      example: 6650f1c2a1b2c3d4e5f60718
+ 
+    Role:
+      type: string
+      enum: [USER, ADMIN]
+ 
+    Error:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: Note not found
+ 
+    Message:
+      type: object
+      properties:
+        message:
+          type: string
+ 
+    User:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        name:
+          type: string
+          example: Abir
+        email:
+          type: string
+          example: abir@example.com
+        role:
+          $ref: '#/components/schemas/Role'
+        emailVerified:
+          type: boolean
+        interests:
+          type: array
+          items:
+            type: string
+          example: [chess, reading]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+ 
+    Note:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        owner:
+          $ref: '#/components/schemas/ObjectId'
+        title:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+ 
+    Post:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        author:
+          $ref: '#/components/schemas/ObjectId'
+        title:
+          type: string
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+ 
+    RegisterBody:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 60
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          minLength: 8
+          maxLength: 72
+ 
+    LoginBody:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+ 
+    TokenBody:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+ 
+    EmailBody:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+ 
+    AcceptInviteBody:
+      type: object
+      required: [token, name, password]
+      properties:
+        token:
+          type: string
+        name:
+          type: string
+          minLength: 2
+          maxLength: 60
+        password:
+          type: string
+          minLength: 8
+          maxLength: 72
+ 
+    UpdateMeBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 60
+        interests:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+ 
+    CreateNoteBody:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          type: string
+          maxLength: 10000
+ 
+    UpdateNoteBody:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          type: string
+          maxLength: 10000
+ 
+    CreatePostBody:
+      type: object
+      required: [title, body]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        body:
+          type: string
+          minLength: 1
+          maxLength: 10000
+ 
+    UpdatePostBody:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        body:
+          type: string
+          minLength: 1
+          maxLength: 10000
+ 
+    InviteBody:
+      type: object
+      required: [email, role]
+      properties:
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/Role'
+ 
+    AdminUpdateUserBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 60
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        role:
+          $ref: '#/components/schemas/Role'
+        interests:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+ 
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+ 
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+ 
+    UserList:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
+ 
+    NoteList:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Note'
+ 
+    AdminNoteList:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Note'
+                  - type: object
+                    properties:
+                      owner:
+                        type: object
+                        properties:
+                          _id:
+                            $ref: '#/components/schemas/ObjectId'
+                          name:
+                            type: string
+ 
+    InterestGroupList:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                properties:
+                  interest:
+                    type: string
+                    example: chess
+                  count:
+                    type: integer
+                    example: 3
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          $ref: '#/components/schemas/ObjectId'
+                        name:
+                          type: string
+ 
+    UserPostList:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          properties:
+            user:
+              type: object
+              properties:
+                _id:
+                  $ref: '#/components/schemas/ObjectId'
+                name:
+                  type: string
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Post'
