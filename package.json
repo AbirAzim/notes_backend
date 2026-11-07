@@ -1,32 +1,39 @@
 {
-	"name": "notes_backend",
-	"version": "1.0.0",
-	"description": "notes API with RBAC, MongoDB indexing and aggregation",
-	"main": "index.js",
-	"private": true,
-	"directories": {
-		"doc": "docs"
-	},
-	"scripts": {
-		"dev": "tsx watch src/server.ts",
-		"build": "tsc",
-		"start": "node dist/server.js",
-		"typecheck": "tsc --noEmit"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/AbirAzim/notes_backend.git"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"bugs": {
-		"url": "https://github.com/AbirAzim/notes_backend/issues"
-	},
-	"homepage": "https://github.com/AbirAzim/notes_backend#readme",
-	"devDependencies": {
-		"@types/node": "^26.6.6",
-		"tsx": "^4.23.15",
-		"typescript": "^7.0.2"
-	}
+  "name": "notes_backend",
+  "version": "1.0.0",
+  "description": "notes API with RBAC, MongoDB indexing and aggregation",
+  "main": "index.js",
+  "private": true,
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AbirAzim/notes_backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AbirAzim/notes_backend/issues"
+  },
+  "homepage": "https://github.com/AbirAzim/notes_backend#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "typescript-eslint": "^8.72.1"
+  }
 }
