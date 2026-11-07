@@ -14,10 +14,26 @@ tags:
   - name: Posts
   - name: Admins
 
-  
+security:
+  - bearerAuth: []
+
 paths:
-  /test:
+  /health:
+    servers:
+      - url: http://localhost:3000
     get:
+      tags: [Health]
+      operationId: healthCheck
+      summary: Health check
+      security: []
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
