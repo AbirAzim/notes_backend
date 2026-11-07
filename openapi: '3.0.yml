@@ -6,10 +6,13 @@ info:
     API for the notes app. Users can write private notes and public posts,
     admins can manage users and see all notes.
 
+    Responses include `_links` (HATEOAS) pointing to related resources and the
+    actions the caller is allowed to take, plus `first`/`prev`/`next`/`last` on lists.
+
 servers:
   - url: http://localhost:3000/api/v1
     description: local
-  - url: https://api.example.com/api/v1
+  - url: https://api.YOUR-DOMAIN.com/api/v1
     description: production
 
 tags:
@@ -660,6 +663,22 @@ components:
         message:
           type: string
 
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+          example: /api/v1/notes/6650f1c2a1b2c3d4e5f60718
+        method:
+          type: string
+          example: PATCH
+
+    Links:
+      type: object
+      description: Related actions. Only links the caller is allowed to use are included.
+      additionalProperties:
+        $ref: '#/components/schemas/Link'
+
     User:
       type: object
       properties:
@@ -686,6 +705,12 @@ components:
         updatedAt:
           type: string
           format: date-time
+        _links:
+          allOf:
+            - $ref: '#/components/schemas/Links'
+          example:
+            self: { href: /api/v1/users/me }
+            posts: { href: /api/v1/users/664a1b2c3d4e5f6071829304/posts }
 
     Note:
       type: object
@@ -704,6 +729,13 @@ components:
         updatedAt:
           type: string
           format: date-time
+        _links:
+          allOf:
+            - $ref: '#/components/schemas/Links'
+          example:
+            self: { href: /api/v1/notes/6650f1c2a1b2c3d4e5f60718 }
+            update: { href: /api/v1/notes/6650f1c2a1b2c3d4e5f60718, method: PATCH }
+            delete: { href: /api/v1/notes/6650f1c2a1b2c3d4e5f60718, method: DELETE }
 
     Post:
       type: object
@@ -722,6 +754,14 @@ components:
         updatedAt:
           type: string
           format: date-time
+        _links:
+          allOf:
+            - $ref: '#/components/schemas/Links'
+          example:
+            self: { href: /api/v1/posts/6650f1c2a1b2c3d4e5f60718 }
+            author: { href: /api/v1/users/664a1b2c3d4e5f6071829304/posts }
+            update: { href: /api/v1/posts/6650f1c2a1b2c3d4e5f60718, method: PATCH }
+            delete: { href: /api/v1/posts/6650f1c2a1b2c3d4e5f60718, method: DELETE }
 
     RegisterBody:
       type: object
@@ -881,6 +921,12 @@ components:
           type: string
         user:
           $ref: '#/components/schemas/User'
+        _links:
+          allOf:
+            - $ref: '#/components/schemas/Links'
+          example:
+            me: { href: /api/v1/users/me }
+            notes: { href: /api/v1/notes }
 
     Pagination:
       type: object
@@ -893,6 +939,15 @@ components:
           type: integer
         totalPages:
           type: integer
+        _links:
+          allOf:
+            - $ref: '#/components/schemas/Links'
+          example:
+            self: { href: '/api/v1/notes?page=2&limit=10' }
+            first: { href: '/api/v1/notes?page=1&limit=10' }
+            prev: { href: '/api/v1/notes?page=1&limit=10' }
+            next: { href: '/api/v1/notes?page=3&limit=10' }
+            last: { href: '/api/v1/notes?page=5&limit=10' }
 
     UserList:
       allOf:
