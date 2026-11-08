@@ -9,4 +9,9 @@ export const usersController = {
   updateMe: (async (req, res) => {
     res.json(await usersService.updateMe(req.user!.id, req.body));
   }) as RequestHandler,
+
+  // Scenario 1: users grouped by interest
+  groupedByInterests: (async (_req, res) => {
+    res.json(await usersService.groupedByInterests(res.locals.query));
+  }) as RequestHandler,
 };
