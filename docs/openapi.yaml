@@ -20,10 +20,8 @@ info:
     Rate limits: 100 requests/min per IP on the API, 10/min on auth endpoints (429).
 
 servers:
-  - url: http://localhost:3000/api/v1
-    description: local
-  - url: https://note-backend.myftp.org/api/v1
-    description: production
+  - url: /api/v1
+    description: this server
 
 tags:
   - name: Health
@@ -39,8 +37,7 @@ security:
 paths:
   /health:
     servers:
-      - url: http://localhost:3000
-      - url: https://note-backend.myftp.org
+      - url: /
     get:
       tags: [Health]
       operationId: healthCheck
