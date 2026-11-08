@@ -4,13 +4,8 @@ import { mailService } from '../mail/mail.service';
 import { AppError } from '../../utils/app-error';
 import { link } from '../../utils/pagination';
 import { toUserResponse } from '../users/user.serializer';
-import {
-  signAccessToken,
-  signVerifyToken,
-  verifyVerifyToken,
-  verifyInviteToken,
-} from '../../utils/tokens';
-import type { RegisterInput, LoginInput, AcceptInviteInput } from './auth.schemas';
+import { signAccessToken, signVerifyToken, verifyVerifyToken } from '../../utils/tokens';
+import type { RegisterInput, LoginInput } from './auth.schemas';
 
 const BCRYPT_COST = 12;
 // used when the email doesn't exist, so login takes the same time either way
@@ -19,7 +14,7 @@ const DUMMY_HASH = bcrypt.hashSync('timing-attack-protection', BCRYPT_COST);
 const authLinks = () => ({ me: link('/users/me'), notes: link('/notes') });
 
 export const authService = {
-  async register(input: RegisterInput) {
+  async register(input: RegisterInput, requestId?: string) {
     const password = await bcrypt.hash(input.password, BCRYPT_COST);
     const user = await User.create({ ...input, password, role: 'USER', emailVerified: false });
 
@@ -28,7 +23,11 @@ export const authService = {
     } catch (err) {
       // account exists; the user can request a new email via resend-verification
       console.error(
-        JSON.stringify({ event: 'verification_email_failed', error: (err as Error).message }),
+        JSON.stringify({
+          requestId,
+          event: 'verification_email_failed',
+          error: (err as Error).message,
+        }),
       );
     }
 
@@ -60,20 +59,6 @@ export const authService = {
 
     return {
       accessToken: signAccessToken(String(user._id), user.role),
-      user: toUserResponse(user),
-      _links: authLinks(),
-    };
-  },
-
-  async acceptInvite({ token, name, password }: AcceptInviteInput) {
-    const { email, role } = verifyInviteToken(token);
-    const hash = await bcrypt.hash(password, BCRYPT_COST);
-
-    // unique email index makes the link single-use: a second use → E11000 → 409
-    const user = await User.create({ name, email, password: hash, role, emailVerified: true });
-
-    return {
-      accessToken: signAccessToken(user.id, user.role),
       user: toUserResponse(user),
       _links: authLinks(),
     };

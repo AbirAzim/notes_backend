@@ -3,7 +3,7 @@ import { authService } from './auth.service';
 
 export const authController = {
   register: (async (req, res) => {
-    res.status(201).json(await authService.register(req.body));
+    res.status(201).json(await authService.register(req.body, req.id));
   }) as RequestHandler,
 
   verifyEmail: (async (req, res) => {
@@ -16,9 +16,5 @@ export const authController = {
 
   login: (async (req, res) => {
     res.json(await authService.login(req.body));
-  }) as RequestHandler,
-
-  acceptInvite: (async (req, res) => {
-    res.status(201).json(await authService.acceptInvite(req.body));
   }) as RequestHandler,
 };
