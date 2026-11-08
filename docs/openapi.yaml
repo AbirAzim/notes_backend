@@ -656,6 +656,9 @@ components:
         message:
           type: string
           example: Note not found
+        requestId:
+          type: string
+          example: 3f1c9a2e-5b7d-4e8a-9c21-7d4e5f6a8b90
 
     Message:
       type: object
