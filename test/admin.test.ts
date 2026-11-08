@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest';
 import request from 'supertest';
 import { app } from '../src/app';
 import { Note } from '../src/modules/notes/note.model';
 import { Post } from '../src/modules/posts/post.model';
+import { mailService } from '../src/modules/mail/mail.service';
 import { connectTestDb, clearTestDb, disconnectTestDb, createUser } from './helpers';
 
 beforeAll(connectTestDb);
@@ -19,6 +20,47 @@ describe('admin', () => {
       (await request(app).get(`${api}/admin/users`).set('Authorization', `Bearer ${user.token}`))
         .status,
     ).toBe(403);
+  });
+
+  it('lets an admin create an unverified user, and rejects duplicates and non-admins', async () => {
+    const sendVerification = vi.spyOn(mailService, 'sendVerification').mockResolvedValue();
+    const admin = await createUser('Admin', 'ADMIN');
+    const user = await createUser('Abir');
+    const url = `${api}/admin/users`;
+    const body = {
+      name: 'Created Person',
+      email: 'created@test.local',
+      password: 'password123',
+      role: 'USER',
+    };
+
+    const res = await request(app)
+      .post(url)
+      .set('Authorization', `Bearer ${admin.token}`)
+      .send(body);
+    expect(res.status).toBe(201);
+    expect(res.body.emailVerified).toBe(false);
+    expect(res.body.password).toBeUndefined();
+    expect(res.headers.location).toBe(`${api}/admin/users/${res.body._id}`);
+    expect(sendVerification).toHaveBeenCalledOnce();
+
+    // the new account still has to verify its email before logging in
+    const login = await request(app)
+      .post(`${api}/auth/login`)
+      .send({ email: body.email, password: body.password });
+    expect(login.status).toBe(403);
+
+    const duplicate = await request(app)
+      .post(url)
+      .set('Authorization', `Bearer ${admin.token}`)
+      .send(body);
+    expect(duplicate.status).toBe(409);
+
+    const asUser = await request(app)
+      .post(url)
+      .set('Authorization', `Bearer ${user.token}`)
+      .send({ ...body, email: 'other@test.local' });
+    expect(asUser.status).toBe(403);
   });
 
   it('lets an admin change role but not email or password', async () => {

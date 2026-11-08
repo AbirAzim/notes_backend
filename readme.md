@@ -255,27 +255,28 @@ Controllers stay thin: they read the validated input, call a service and send th
 
 All routes are under `/api/v1` except `/health` and `/docs`. The full spec with request and response bodies is in `docs/openapi.yaml` and on `/docs`.
 
-| Method               | Path                          | Who    | What                                              |
-| -------------------- | ----------------------------- | ------ | ------------------------------------------------- |
-| GET                  | `/health`                     | anyone | health check                                      |
-| POST                 | `/auth/register`              | anyone | create a USER account, sends a verification email |
-| POST                 | `/auth/verify-email`          | anyone | verify with the token from the email              |
-| POST                 | `/auth/resend-verification`   | anyone | send a new verification link                      |
-| POST                 | `/auth/login`                 | anyone | returns a JWT                                     |
-| GET                  | `/users/me`                   | user   | my profile                                        |
-| PATCH                | `/users/me`                   | user   | update my name and interests                      |
-| GET                  | `/users/grouped-by-interests` | user   | **Scenario 1**                                    |
-| GET                  | `/users/:id/posts`            | user   | **Scenario 2**                                    |
-| POST                 | `/notes`                      | user   | create a note                                     |
-| GET                  | `/notes`                      | user   | my notes, newest first                            |
-| GET / PATCH / DELETE | `/notes/:id`                  | owner  | one of my notes                                   |
-| POST                 | `/posts`                      | user   | create a post                                     |
-| GET                  | `/posts/:id`                  | user   | one post                                          |
-| PATCH / DELETE       | `/posts/:id`                  | author | edit or delete my post                            |
-| GET                  | `/admin/users`                | admin  | all users                                         |
-| PATCH                | `/admin/users/:id`            | admin  | change name, role, interests                      |
-| DELETE               | `/admin/users/:id`            | admin  | delete a user with their notes and posts          |
-| GET                  | `/admin/notes`                | admin  | everyone's notes with the owner's name            |
+| Method               | Path                          | Who    | What                                                         |
+| -------------------- | ----------------------------- | ------ | ------------------------------------------------------------ |
+| GET                  | `/health`                     | anyone | health check                                                 |
+| POST                 | `/auth/register`              | anyone | create a USER account, sends a verification email            |
+| POST                 | `/auth/verify-email`          | anyone | verify with the token from the email                         |
+| POST                 | `/auth/resend-verification`   | anyone | send a new verification link                                 |
+| POST                 | `/auth/login`                 | anyone | returns a JWT                                                |
+| GET                  | `/users/me`                   | user   | my profile                                                   |
+| PATCH                | `/users/me`                   | user   | update my name and interests                                 |
+| GET                  | `/users/grouped-by-interests` | user   | **Scenario 1**                                               |
+| GET                  | `/users/:id/posts`            | user   | **Scenario 2**                                               |
+| POST                 | `/notes`                      | user   | create a note                                                |
+| GET                  | `/notes`                      | user   | my notes, newest first                                       |
+| GET / PATCH / DELETE | `/notes/:id`                  | owner  | one of my notes                                              |
+| POST                 | `/posts`                      | user   | create a post                                                |
+| GET                  | `/posts/:id`                  | user   | one post                                                     |
+| PATCH / DELETE       | `/posts/:id`                  | author | edit or delete my post                                       |
+| GET                  | `/admin/users`                | admin  | all users                                                    |
+| POST                 | `/admin/users`                | admin  | create a user (starts unverified, gets a verification email) |
+| PATCH                | `/admin/users/:id`            | admin  | change name, role, interests                                 |
+| DELETE               | `/admin/users/:id`            | admin  | delete a user with their notes and posts                     |
+| GET                  | `/admin/notes`                | admin  | everyone's notes with the owner's name                       |
 
 Protected routes need `Authorization: Bearer <token>`.
 
@@ -286,7 +287,8 @@ Protected routes need `Authorization: Bearer <token>`.
 There are two roles, `USER` and `ADMIN`. An admin can do everything a user can, plus the `/admin` routes.
 
 - **Registration always creates a `USER`.** The role isn't accepted from the request body (the schemas are strict, so unknown fields are rejected), so nobody can register as an admin.
-- **The first admin comes from env** (`ADMIN_EMAIL`, `ADMIN_PASSWORD`) and is created once on startup. Other admins are made by promoting a user with `PATCH /admin/users/:id`.
+- **The first admin comes from env** (`ADMIN_EMAIL`, `ADMIN_PASSWORD`) and is created once on startup. Other admins are made by creating a user with role `ADMIN` (`POST /admin/users`) or promoting one with `PATCH /admin/users/:id`.
+- **Users an admin creates start unverified** and get the same verification email as a normal sign-up, so an admin can't create a working account for an email address nobody controls.
 - **Notes are private.** Every note query includes the owner: `{ _id, owner: userId }`. If you ask for someone else's note you get 404, not 403, so you can't tell whether the note exists.
 - **Posts are readable by any logged-in user**, but only the author can edit or delete them.
 - **Admins can read all notes but not edit them.** They can change a user's name, role and interests, but not their email or password, since those belong to the account owner.
@@ -474,14 +476,14 @@ Errors always look like this:
 npm test
 ```
 
-18 integration tests with Vitest and Supertest. They run against a real MongoDB started in memory by `mongodb-memory-server`, as a single-node replica set so the delete transaction works. They don't touch Atlas or send email (the mailer is mocked).
+19 integration tests with Vitest and Supertest. They run against a real MongoDB started in memory by `mongodb-memory-server`, as a single-node replica set so the delete transaction works. They don't touch Atlas or send email (the mailer is mocked).
 
-| File                   | Covers                                                                                                                                                       |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `auth.test.ts`         | must verify before login, can't register as admin, duplicate email 409, same 401 for wrong email and password, tampered token, missing token, malformed JSON |
-| `notes.test.ts`        | create returns 201 with Location, pagination and links, can't read another user's note (404), ETag returns 304, invalid id                                   |
-| `admin.test.ts`        | 401/403 for non-admins, admin can change role but not email or password, can't demote or delete self, delete removes notes and posts                         |
-| `aggregations.test.ts` | Scenario 1 grouping and filter, Scenario 2 results and author-only links, 404 for an unknown user                                                            |
+| File                   | Covers                                                                                                                                                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `auth.test.ts`         | must verify before login, can't register as admin, duplicate email 409, same 401 for wrong email and password, tampered token, missing token, malformed JSON                                                  |
+| `notes.test.ts`        | create returns 201 with Location, pagination and links, can't read another user's note (404), ETag returns 304, invalid id                                                                                    |
+| `admin.test.ts`        | 401/403 for non-admins, admin creates an unverified user (409 on duplicate, 403 for non-admins), admin can change role but not email or password, can't demote or delete self, delete removes notes and posts |
+| `aggregations.test.ts` | Scenario 1 grouping and filter, Scenario 2 results and author-only links, 404 for an unknown user                                                                                                             |
 
 I chose integration tests over unit tests because most of the risk here is in the queries, the permissions and the middleware working together, and mocking Mongoose would hide exactly those bugs.
 
@@ -514,7 +516,7 @@ tests ──────────────────┘
 
 - **Express instead of NestJS.** The task is small, and I wanted every piece (validation, auth, errors) to be visible code rather than framework behaviour.
 - **Email verification before login.** It wasn't in the brief, but it stops people registering with someone else's address. Resend exists so a failed or expired email doesn't lock an account forever, since the email can't be registered again.
-- **No admin invitations.** I planned an invite flow at first but dropped it. Promoting an existing user covers the same need with less code and fewer tokens to secure.
+- **Admin creates users directly instead of sending invites.** I planned an invite flow at first but dropped it. The admin sets the name, email, password and role, and the account still has to verify its email, which gives the same protection with less code and no invite tokens to secure.
 - **Admin can't change email or password.** Those identify and protect the account owner, and an admin changing them would effectively be taking over the account.
 - **404 instead of 403 for other people's notes**, so ids can't be probed.
 - **Offset pagination** (`page`/`limit`) because the brief and a simple frontend both fit it. For very deep pages, cursor pagination on `_id` would be faster, and the indexes already support it.

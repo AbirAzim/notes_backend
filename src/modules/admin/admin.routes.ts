@@ -5,7 +5,7 @@ import { authorize } from '../../middleware/authorize';
 import { privateCache } from '../../middleware/cache';
 import { validate } from '../../middleware/validate';
 import { idParamSchema, paginationSchema } from '../../utils/schemas';
-import { adminUpdateUserSchema } from './admin.schemas';
+import { adminCreateUserSchema, adminUpdateUserSchema } from './admin.schemas';
 
 export const adminRouter = Router();
 
@@ -17,6 +17,7 @@ adminRouter.get(
   validate({ query: paginationSchema }),
   adminController.listUsers,
 );
+adminRouter.post('/users', validate({ body: adminCreateUserSchema }), adminController.createUser);
 adminRouter.patch(
   '/users/:id',
   validate({ params: idParamSchema, body: adminUpdateUserSchema }),
