@@ -5,9 +5,11 @@ import cors from 'cors';
 import { env } from './config/env';
 import { docsRouter } from './docs';
 import { healthRouter } from './modules/health/health.routes';
+import { authRouter } from './modules/auth/auth.routes';
 import { requestId } from './middleware/request-id';
 import { requestLogger } from './middleware/request-logger';
 import { noStore } from './middleware/cache';
+import { globalLimiter } from './middleware/rate-limit';
 import { errorHandler, notFound } from './middleware/error-handler';
 
 export const app = express();
@@ -39,12 +41,13 @@ app.use(noStore);
 // 5. parse JSON bodies, reject anything over 100kb
 app.use(express.json({ limit: '100kb' }));
 
-// 6. infrastructure route, not versioned
+// 6. infrastructure route: not versioned, not rate-limited
 app.use('/health', healthRouter);
 
-// 7. versioned API: feature routers are added here in later steps
+// 7. versioned API: global per-IP rate limit, then feature routers
 const api = express.Router();
-app.use('/api/v1', api);
+api.use('/auth', authRouter);
+app.use('/api/v1', globalLimiter, api);
 
 // 8. must be last
 app.use(notFound);

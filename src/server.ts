@@ -4,6 +4,7 @@ import { env } from './config/env';
 import { User } from './modules/users/user.model';
 import { Note } from './modules/notes/note.model';
 import { Post } from './modules/posts/post.model';
+import { ensureAdmin } from './seed/ensure-admin';
 
 async function main() {
   await mongoose.connect(env.MONGO_URI);
@@ -12,6 +13,8 @@ async function main() {
   // create collections and the indexes
   await Promise.all([User.init(), Note.init(), Post.init()]);
   console.log('Indexes ready');
+
+  await ensureAdmin();
 
   app.listen(env.PORT, () => {
     console.log(`API listening on port ${env.PORT}`);
