@@ -2,13 +2,11 @@ import mongoose from 'mongoose';
 import { User } from '../users/user.model';
 import { Note } from '../notes/note.model';
 import { Post } from '../posts/post.model';
-import { mailService } from '../mail/mail.service';
 import { AppError } from '../../utils/app-error';
 import { paginated, toSkip } from '../../utils/pagination';
-import { signInviteToken } from '../../utils/tokens';
 import type { PaginationQuery } from '../../utils/schemas';
 import { toAdminUserResponse, toAdminNoteResponse } from './admin.serializer';
-import type { AdminUpdateUserInput, InviteInput } from './admin.schemas';
+import type { AdminUpdateUserInput } from './admin.schemas';
 
 const USER_FIELDS = 'name email role emailVerified interests createdAt updatedAt';
 const NOTE_FIELDS = 'title content owner createdAt updatedAt';
@@ -16,7 +14,12 @@ const NOTE_FIELDS = 'title content owner createdAt updatedAt';
 export const adminService = {
   async listUsers(adminId: string, query: PaginationQuery) {
     const [users, total] = await Promise.all([
-      User.find().sort({ _id: -1 }).skip(toSkip(query)).limit(query.limit).select(USER_FIELDS).lean(),
+      User.find()
+        .sort({ _id: -1 })
+        .skip(toSkip(query))
+        .limit(query.limit)
+        .select(USER_FIELDS)
+        .lean(),
       User.estimatedDocumentCount(),
     ]);
     return paginated(
@@ -67,11 +70,5 @@ export const adminService = {
       Note.estimatedDocumentCount(),
     ]);
     return paginated(notes.map(toAdminNoteResponse), total, query, '/admin/notes');
-  },
-
-  async invite({ email, role }: InviteInput) {
-    if (await User.exists({ email })) throw new AppError(409, 'Email already in use');
-    await mailService.sendInvitation(email, signInviteToken(email, role), role);
-    return { message: `Invitation sent to ${email}` };
   },
 };

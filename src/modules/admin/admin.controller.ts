@@ -18,8 +18,4 @@ export const adminController = {
   listNotes: (async (_req, res) => {
     res.json(await adminService.listNotes(res.locals.query));
   }) as RequestHandler,
-
-  invite: (async (req, res) => {
-    res.status(201).json(await adminService.invite(req.body));
-  }) as RequestHandler,
 };
