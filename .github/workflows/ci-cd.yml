@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   pull_request:
@@ -7,14 +7,15 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # cancel outdated PR runs, but never cancel a deploy halfway
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
   checks:
-    name: Lint, typecheck, test, build
+    name: Lint, typecheck, build
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -40,23 +41,41 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Build
+        run: npm run build
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Cache MongoDB binary
         uses: actions/cache@v4
         with:
           path: ~/.cache/mongodb-binaries
           key: mongodb-binaries-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
-      - name: Test
+      - name: Run tests
         run: npm test
-
-      - name: Build
-        run: npm run build
 
   docker-build:
     name: Build Docker image
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: checks
+    needs: [checks, test]
 
     steps:
       - name: Checkout
@@ -64,3 +83,48 @@ jobs:
 
       - name: Build image (no push)
         run: docker build -t notes-backend:ci .
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [checks, test, docker-build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+
+    env:
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      EC2_USER: ${{ secrets.EC2_USER }}
+      APP_DIR: notes
+      HEALTH_URL: https://note-backend.myftp.org/health
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2.pem
+          chmod 600 ~/.ssh/ec2.pem
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+      - name: Copy code to the server
+        run: |
+          rsync -az --delete \
+            --exclude node_modules --exclude dist --exclude .git --exclude .env \
+            -e "ssh -i ~/.ssh/ec2.pem" \
+            ./ "$EC2_USER@$EC2_HOST:~/$APP_DIR/"
+
+      - name: Rebuild and restart the container
+        run: |
+          ssh -i ~/.ssh/ec2.pem "$EC2_USER@$EC2_HOST" \
+            "cd ~/$APP_DIR && docker compose up -d --build && docker image prune -f"
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 12); do
+            if curl -fsS "$HEALTH_URL"; then echo " healthy"; exit 0; fi
+            echo "not ready yet ($i/12)"; sleep 5
+          done
+          echo "Health check failed"; exit 1
