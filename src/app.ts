@@ -50,6 +50,9 @@ app.use(express.json({ limit: '100kb' }));
 // 6. infrastructure route: not versioned, not rate-limited
 app.use('/health', healthRouter);
 
+// root has no content of its own, so send visitors to the API docs
+app.get('/', (_req, res) => res.redirect('/docs'));
+
 // 7. versioned API: global per-IP rate limit, then feature routers
 const api = express.Router();
 api.use('/auth', authRouter);
