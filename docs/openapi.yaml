@@ -168,33 +168,6 @@ paths:
         '429':
           $ref: '#/components/responses/TooManyRequests'
 
-  /auth/accept-invite:
-    post:
-      tags: [Auth]
-      operationId: acceptInvite
-      summary: Accept invitation
-      description: Creates the account from an admin invite. Role comes from the invite.
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AcceptInviteBody'
-      responses:
-        '201':
-          description: Account created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-
   /users/me:
     get:
       tags: [Users]
@@ -489,6 +462,7 @@ paths:
       tags: [Admin]
       operationId: updateUser
       summary: Update user
+      description: Only name, role and interests can be changed — never email or password. An admin can't demote themselves.
       requestBody:
         required: true
         content:
@@ -510,13 +484,11 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
     delete:
       tags: [Admin]
       operationId: deleteUser
       summary: Delete user
-      description: Also deletes the user's notes and posts.
+      description: Also deletes the user's notes and posts in one transaction. An admin can't delete themselves.
       responses:
         '204':
           description: Deleted
@@ -528,34 +500,6 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-
-  /admin/invitations:
-    post:
-      tags: [Admin]
-      operationId: inviteUser
-      summary: Invite user
-      description: Sends an invite link to the email. The link expires in 48 hours.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InviteBody'
-      responses:
-        '201':
-          description: Invitation sent
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Message'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '409':
-          $ref: '#/components/responses/Conflict'
 
   /admin/notes:
     get:
@@ -819,21 +763,6 @@ components:
           type: string
           format: email
 
-    AcceptInviteBody:
-      type: object
-      required: [token, name, password]
-      properties:
-        token:
-          type: string
-        name:
-          type: string
-          minLength: 2
-          maxLength: 60
-        password:
-          type: string
-          minLength: 8
-          maxLength: 72
-
     UpdateMeBody:
       type: object
       properties:
@@ -897,18 +826,11 @@ components:
           minLength: 1
           maxLength: 10000
 
-    InviteBody:
-      type: object
-      required: [email, role]
-      properties:
-        email:
-          type: string
-          format: email
-        role:
-          $ref: '#/components/schemas/Role'
-
     AdminUpdateUserBody:
       type: object
+      description: Email and password are not accepted.
+      additionalProperties: false
+      minProperties: 1
       properties:
         name:
           type: string
