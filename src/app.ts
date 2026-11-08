@@ -4,13 +4,16 @@ import cors from 'cors';
 
 import { env } from './config/env';
 import { docsRouter } from './docs';
-import { healthRouter } from './modules/health/health.routes';
-import { authRouter } from './modules/auth/auth.routes';
+
 import { requestId } from './middleware/request-id';
 import { requestLogger } from './middleware/request-logger';
 import { noStore } from './middleware/cache';
 import { globalLimiter } from './middleware/rate-limit';
 import { errorHandler, notFound } from './middleware/error-handler';
+
+import { healthRouter } from './modules/health/health.routes';
+import { authRouter } from './modules/auth/auth.routes';
+import { usersRouter } from './modules/users/users.routes';
 
 export const app = express();
 
@@ -47,6 +50,7 @@ app.use('/health', healthRouter);
 // 7. versioned API: global per-IP rate limit, then feature routers
 const api = express.Router();
 api.use('/auth', authRouter);
+api.use('/users', usersRouter);
 app.use('/api/v1', globalLimiter, api);
 
 // 8. must be last
