@@ -16,6 +16,7 @@ import { authRouter } from './modules/auth/auth.routes';
 import { usersRouter } from './modules/users/users.routes';
 import { notesRouter } from './modules/notes/notes.routes';
 import { adminRouter } from './modules/admin/admin.routes';
+import { postsRouter } from './modules/posts/posts.routes';
 
 export const app = express();
 
@@ -55,6 +56,7 @@ api.use('/auth', authRouter);
 api.use('/users', usersRouter);
 api.use('/notes', notesRouter);
 api.use('/admin', adminRouter);
+api.use('/posts', postsRouter);
 app.use('/api/v1', globalLimiter, api);
 
 // 8. must be last
