@@ -14,6 +14,7 @@ import { errorHandler, notFound } from './middleware/error-handler';
 import { healthRouter } from './modules/health/health.routes';
 import { authRouter } from './modules/auth/auth.routes';
 import { usersRouter } from './modules/users/users.routes';
+import { notesRouter } from './modules/notes/notes.routes';
 
 export const app = express();
 
@@ -51,6 +52,7 @@ app.use('/health', healthRouter);
 const api = express.Router();
 api.use('/auth', authRouter);
 api.use('/users', usersRouter);
+api.use('/notes', notesRouter);
 app.use('/api/v1', globalLimiter, api);
 
 // 8. must be last
