@@ -6,13 +6,23 @@ info:
     API for the notes app. Users can write private notes and public posts,
     admins can manage users and see all notes.
 
+    All list endpoints support `page` and `limit` (max 100).
+
     Responses include `_links` (HATEOAS) pointing to related resources and the
     actions the caller is allowed to take, plus `first`/`prev`/`next`/`last` on lists.
+
+    Every response has an `X-Request-Id` header (send your own to reuse it); errors
+    return `{ statusCode, message, requestId }`.
+
+    Reads use `Cache-Control: private, no-cache` with an `ETag` — send `If-None-Match`
+    to get `304 Not Modified` when nothing changed. Everything else is `no-store`.
+
+    Rate limits: 100 requests/min per IP on the API, 10/min on auth endpoints (429).
 
 servers:
   - url: http://localhost:3000/api/v1
     description: local
-  - url: https://api.YOUR-DOMAIN.com/api/v1
+  - url: https://note-backend.myftp.org/api/v1
     description: production
 
 tags:
@@ -30,7 +40,7 @@ paths:
   /health:
     servers:
       - url: http://localhost:3000
-      - url: https://api.YOUR-DOMAIN.com
+      - url: https://note-backend.myftp.org
     get:
       tags: [Health]
       operationId: healthCheck
@@ -658,6 +668,7 @@ components:
           example: Note not found
         requestId:
           type: string
+          description: Same value as the X-Request-Id response header
           example: 3f1c9a2e-5b7d-4e8a-9c21-7d4e5f6a8b90
 
     Message:
