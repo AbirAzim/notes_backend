@@ -914,10 +914,6 @@ components:
           type: string
           minLength: 2
           maxLength: 60
-        email:
-          type: string
-          format: email
-          maxLength: 254
         role:
           $ref: '#/components/schemas/Role'
         interests:
