@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach } from 'vitest';
 import request from 'supertest';
 import { app } from '../src/app';
 import { Note } from '../src/modules/notes/note.model';
