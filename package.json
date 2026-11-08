@@ -16,7 +16,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "docker:up": "docker compose up --build",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "seed": "tsx --env-file=.env src/seed/bulk-seed.ts",
+    "explain": "tsx --env-file=.env src/seed/explain.ts"
   },
   "repository": {
     "type": "git",
