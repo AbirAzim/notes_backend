@@ -1,68 +1,66 @@
-user
+User
   - _id (ObjectId)
-  - name (2	- 60 chars)
-  - email (unique, lowercase , max 254 chars)
+  - name (2–60 chars)
+  - email (unique, lowercase, max 254 chars)
   - password (8–72 chars input, bcrypt hash)
   - role (enum ADMIN | USER) (default USER)
   - emailVerified (default false)
-  - interests (string[], ['chess', 'reading'], max 20(abuse Protection)) (each interest 1	- 50 chars) (trimmed, lowercased, de-duplicated)
-  - createdAt (auto generate)
-  - updatedAt (auto generate)
+  - interests (string[], e.g. ['chess', 'reading'], max 20 (abuse protection)) (each interest 1–50 chars) (trimmed, lowercased, de-duplicated)
+  - createdAt (auto generated)
+  - updatedAt (auto generated)
   - Indexes: { email: 1 } unique · { interests: 1 }
 
-Note (Owner ALl + Admin View Only)
+Note (owner: full access · admin: view only)
   - _id
-  - owner ObjectId -> user._id (cascade delete with user)
+  - owner ObjectId → user._id (cascade delete with user)
   - title (1–200 chars)
   - content (0–10,000 chars)
-  - createdAt (auto generate)
-  - updatedAt (auto generate)
+  - createdAt (auto generated)
+  - updatedAt (auto generated)
   - Indexes: { owner: 1, _id: -1 }
 
-Post  (Public Only Need Authentication)
+Post (visible to any logged-in user · author edits/deletes)
   - _id
   - author ObjectId → user._id (cascade delete with user)
   - title (1–200 chars)
   - body string (1–10,000 chars)
-  - createdAt (auto generate)
-  - updatedAt (auto generate)
+  - createdAt (auto generated)
+  - updatedAt (auto generated)
   - Indexes: { author: 1, _id: -1 }
 
 
-##Routes
-  health
+## Routes (prefix /api/v1, except /health and /docs)
+
+  Health
     - GET /health
-  
+
   Auth
+    - POST /auth/register
+    - POST /auth/verify-email
+    - POST /auth/resend-verification
     - POST /auth/login
 
-    - POST /auth/register
-    - POST /auth/verify-email 
-    - POST /auth/resend-verification
-    - POST /auth/accept-invite  
-    
-  USers
-    - GET /users/me
+  Users
+    - GET   /users/me
     - PATCH /users/me
-    - GET /users/grouped-by-interests (Scenario 1: users grouped by interest (?interests=chess,reading))
-    - GET /users/:id/posts (Scenario 2: all posts of a user ($lookup))
+    - GET   /users/grouped-by-interests   (Scenario 1: users grouped by interest, ?interests=chess,reading)
+    - GET   /users/:id/posts              (Scenario 2: all posts of a user, $lookup)
 
   Notes (own only)
-    - POST /notes 
-    - GET /notes
-    - GET /notes/:id
-    - PATCH /notes/:id 
+    - POST   /notes
+    - GET    /notes
+    - GET    /notes/:id
+    - PATCH  /notes/:id
     - DELETE /notes/:id
-  
-  Posts
-    - POST /posts
-    - GET
-    - PATCH
-    - DELETE 
 
-  Admins
-    - GET /admin/user
-    - POST /admin/invitations
-    - PATCH  /admin/users/:id
-    - DELETE /admin/users/:id 
-    - GET  /admin/notes 
+  Posts
+    - POST   /posts
+    - GET    /posts/:id
+    - PATCH  /posts/:id      (author only)
+    - DELETE /posts/:id      (author only)
+
+  Admin
+    - GET    /admin/users
+    - PATCH  /admin/users/:id   (name, role, interests only)
+    - DELETE /admin/users/:id   (cascade notes + posts, in a transaction)
+    - GET    /admin/notes
