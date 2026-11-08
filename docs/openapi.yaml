@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: |
     API for the notes app. Users can write private notes and public posts,
-    admins can manage users and see all notes.
+    admins can add, update, remove and list users and see all notes.
 
     All list endpoints support `page` and `limit` (max 100).
 
@@ -451,6 +451,37 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [Admin]
+      operationId: createUser
+      summary: Create user
+      description: Creates an account with the given role (default USER). It starts unverified and a verification email is sent; the person must verify before logging in.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCreateUserBody'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new user
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
   /admin/users/{id}:
     parameters:
@@ -822,6 +853,33 @@ components:
           type: string
           minLength: 1
           maxLength: 10000
+
+    AdminCreateUserBody:
+      type: object
+      required: [name, email, password]
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 60
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          minLength: 8
+          maxLength: 72
+        role:
+          $ref: '#/components/schemas/Role'
+        interests:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
 
     AdminUpdateUserBody:
       type: object
