@@ -15,13 +15,17 @@ function collect(obj: unknown, key: string, out: unknown[] = []): unknown[] {
   return out;
 }
 
-const sum = (values: unknown[]) => values.reduce<number>((a, v) => a + (typeof v === 'number' ? v : 0), 0);
+const sum = (values: unknown[]) =>
+  values.reduce<number>((a, v) => a + (typeof v === 'number' ? v : 0), 0);
 
 function summarize(query: string, explain: unknown) {
   const plans = collect(explain, 'winningPlan');
   const stages = [...new Set(collect(plans, 'stage') as string[])];
   const indexes = [
-    ...new Set([...collect(plans, 'indexName'), ...(collect(explain, 'indexesUsed').flat() as unknown[])]),
+    ...new Set([
+      ...collect(plans, 'indexName'),
+      ...(collect(explain, 'indexesUsed').flat() as unknown[]),
+    ]),
   ];
   return {
     query,
@@ -41,7 +45,10 @@ async function main() {
   const id = new Types.ObjectId(String(user._id));
 
   const rows = [
-    summarize('login: findOne({ email })', await User.findOne({ email: user.email }).explain('executionStats')),
+    summarize(
+      'login: findOne({ email })',
+      await User.findOne({ email: user.email }).explain('executionStats'),
+    ),
 
     summarize(
       'my notes: find({ owner }).sort({ _id: -1 }).limit(10)',
