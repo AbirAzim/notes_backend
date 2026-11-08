@@ -21,7 +21,16 @@ export const groupedByInterestsQuerySchema = paginationSchema.extend({
     .max(500)
     .optional()
     .transform((s) =>
-      s ? [...new Set(s.split(',').map((i) => i.trim().toLowerCase()).filter(Boolean))] : undefined,
+      s
+        ? [
+            ...new Set(
+              s
+                .split(',')
+                .map((i) => i.trim().toLowerCase())
+                .filter(Boolean),
+            ),
+          ]
+        : undefined,
     )
     .refine((list) => !list || list.length <= 20, { message: 'At most 20 interests' }),
 });
