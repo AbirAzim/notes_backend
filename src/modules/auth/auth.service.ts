@@ -27,7 +27,9 @@ export const authService = {
       await mailService.sendVerification(user.email, signVerifyToken(user.id));
     } catch (err) {
       // account exists; the user can request a new email via resend-verification
-      console.error(JSON.stringify({ event: 'verification_email_failed', error: (err as Error).message }));
+      console.error(
+        JSON.stringify({ event: 'verification_email_failed', error: (err as Error).message }),
+      );
     }
 
     return { message: 'Registration successful. Please check your email to verify your account.' };
