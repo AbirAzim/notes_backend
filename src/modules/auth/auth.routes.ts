@@ -7,7 +7,6 @@ import {
   loginSchema,
   verifyEmailSchema,
   resendVerificationSchema,
-  acceptInviteSchema,
 } from './auth.schemas';
 
 export const authRouter = Router();
@@ -22,8 +21,3 @@ authRouter.post(
   authController.resendVerification,
 );
 authRouter.post('/login', validate({ body: loginSchema }), authController.login);
-authRouter.post(
-  '/accept-invite',
-  validate({ body: acceptInviteSchema }),
-  authController.acceptInvite,
-);

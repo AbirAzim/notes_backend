@@ -34,7 +34,10 @@ export const adminService = {
     if (id === adminId && input.role && input.role !== 'ADMIN') {
       throw new AppError(400, 'You cannot remove your own admin role');
     }
-    const user = await User.findByIdAndUpdate(id, input, { new: true, runValidators: true })
+    const user = await User.findByIdAndUpdate(id, input, {
+      returnDocument: 'after',
+      runValidators: true,
+    })
       .select(USER_FIELDS)
       .lean();
     if (!user) throw new AppError(404, 'User not found');

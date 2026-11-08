@@ -30,13 +30,4 @@ export const mailService = {
       `<p>Welcome to Secure Notes!</p><p><a href="${url}">Verify your email</a> (valid for 24 hours).</p>`,
     );
   },
-
-  sendInvitation: (to: string, token: string, role: string) => {
-    const url = `${env.FRONTEND_URL}/accept-invite?token=${encodeURIComponent(token)}`;
-    return sendEmail(
-      to,
-      'You have been invited to Secure Notes',
-      `<p>You've been invited as <b>${role}</b>.</p><p><a href="${url}">Accept the invitation</a> (valid for 48 hours).</p>`,
-    );
-  },
 };
